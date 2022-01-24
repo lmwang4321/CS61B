@@ -112,6 +112,6 @@ public class TestBSTMapExtra {
     }
 
     public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestBSTMapExtra.class);
+        // jh61b.junit.TestRunner.runTests(TestBSTMapExtra.class);
     }
 }

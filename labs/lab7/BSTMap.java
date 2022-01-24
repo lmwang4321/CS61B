@@ -1,319 +1,166 @@
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
-public class BSTMap<K extends Comparable<K>,V> implements Map61B{
+public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
+    /** Removes all of the mappings from this map. */
     private Node root;
 
-    /** Represents one node in a binary search tree, which stores
-     * the key-value pairs in the dictionary. */
-    private class Node {
-        int size = 0; // size of subtree
-
-        private K key;
-        private V val;
-        private Node left, right;
-
-        /** Binary Search Tree Constructor. */
-        public Node(K k, V v) {
-            key = k;
-            val = v;
-            size++;
+    private class Node{
+        private K m_key;
+        private V m_value;
+        private Node left;
+        private Node right;
+        private int m_size;
+        public Node(K key, V value, int size){
+            m_key = key;
+            m_value = value;
+            left = null;
+            right = null;
+            m_size = size;
         }
+
     }
 
     @Override
-    public void clear() {
-        root.size = 0;
+    public void clear(){
         root = null;
-
     }
 
+    /* Returns true if this map contains a mapping for the specified key. */
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(K key){
+        if (key == null){
+            throw new IllegalArgumentException("NOOB! DON'T call containsKey() with empty key!");
+        }
+        return containsKey(root, key);
+    }
+
+    private boolean containsKey(Node x, K key){
+        if (x == null)      {return false;}
+        int cmp = key.compareTo(x.m_key);
+        if (cmp < 0 )       {return containsKey(x.left, key);}
+        else if (cmp > 0)   {return containsKey(x.right, key);}
+        else                {return true;}
+    }
+    /* Returns the value to which the specified key is mapped, or null if this
+     * map contains no mapping for the key.
+     */
+    @Override
+    public V get(K key){
+        if (root == null) {
+            throw new NoSuchElementException("tree is empty, nothing to get");
+        }
         if (key == null) {
-            throw new IllegalArgumentException("calls containsKey() with a null key");
+            throw new IllegalArgumentException("NOOB! DON'T call get() with empty key");
         }
-        return get(key) != null;
+        return get(root, key);
     }
 
+    private V get (Node x, K key){
+        if (x == null) return null;
+        if (x.m_key == key)     {return x.m_value;}
+        int cmp = key.compareTo(x.m_key);
+        if (cmp < 0 )           {return get(x.left, key);}
+        else if (cmp > 0)       {return get(x.right, key);}
+        else                    {return x.m_value;} // GOT U!
+    }
+
+    /* Returns the number of key-value mappings in this map. */
     @Override
-    public Object get(Object key) {
-        return get(root, (K) key);
-    }
+    public int size(){ return size(root);}
 
-    /* Returns the this Node, or null if it doesn't exist.
-     * Or return left or right node whichever exists. */
-    private V get(Node x, K k) {
-        if (k == null) {
-            throw new IllegalArgumentException("calls get() with a null key");
-        }
-        if (x == null) {
-            return null;
-        }
-        // binary search for key
-        int compare = k.compareTo(x.key);
-        if (compare < 0) {
-            return get(x.left, k);
-        }
-        else if (compare > 0) {
-            return get(x.right, k);
-        } else {
-            return x.val;
-        }
+    private int size(Node x){
+        if (x == null) return 0;
+        return x.m_size;
     }
-
+    /* Associates the specified value with the specified key in this map. */
     @Override
-    public int size() {
-        return size(root);
+    public void put(K key, V value){
+        if (key == null) throw new IllegalArgumentException("NOOB! DON'T call put() with empty key");
+        root = put(root, key, value);
     }
 
-    /*  return number of key-value pairs in BST rooted at x. */
-    private int size(Node x) {
-        if (x == null) {
-            return 0;
-        } else {
-            return x.size;
+    private Node put (Node x, K key, V value){
+        if (x == null) return new Node(key, value, 1);
+        if (x != null)
+        {
+            int cmp = key.compareTo(x.m_key);
+            if (cmp < 0){
+                x.left = put(x.left, key, value);
+            }
+            else if(cmp > 0){
+                x.right = put(x.right, key, value);
+            }
+            else{
+                x.m_value = value;
+            }
+            x.m_size = 1 + size(x.left) + size(x.right);
         }
-    }
-
-    /** Inserts the key-value pair of KEY and VALUE into this dictionary,
-     *  replacing the previous value associated to KEY, if any. */
-    @Override
-    public void put(Object key, Object value) {
-        if (key == null) {
-            throw new IllegalArgumentException("calls put() with a null key");
-        }
-
-        root = put(root, (K) key, (V) value);
-
-    }
-
-    private Node put(Node x, K key, V val) {
-        if (x == null) {
-            return new Node(key, val);
-        }
-        int cmp = key.compareTo(x.key);
-        if (cmp < 0) {
-            x.left = put(x.left, key, val);
-        }
-        else if (cmp > 0) {
-            x.right = put(x.right, key, val);
-        } else {
-            x.val= val;
-        }
-        x.size = 1 + size(x.left) + size(x.right);
         return x;
-
     }
 
-    /**
-     * Reference Solution:
-     * @Source https://github.com/chenyuxiang0425/cs61b_sp19/blob/master/lab7/BSTMap.java
-     */
-
+    /* Returns a Set view of the keys contained in this map. Not required for Lab 7.
+     * If you don't implement this, throw an UnsupportedOperationException. */
     @Override
-    public Set keySet() {
-        //throw new UnsupportedOperationException();
-        Set<K> BSTSet = new HashSet<>();
-        traverseIn(root, BSTSet);
-        return BSTSet;
+    public Set<K> keySet(){
+        throw new UnsupportedOperationException();
     }
 
-    // Inorder traversal
-    private void traverseIn(Node x, Set s) {
-        Node temp = x; // temp tree node pointer
-        if (temp == null) {
-            return;
-        }
-        traverseIn(temp.left, s);
-        s.add(temp.key);
-        traverseIn(temp.right, s);
-
-    }
-
-    // Remove remain unfilled
-	/*
-	Deletion key has no children.
-	Deletion key has one child.
-	Deletion key has two children.
-	 */
-
-    /**
-     * Remove node, case 1 key 1 value.
-     * @param key key
-     * @return value
-     */
+    /* Removes the mapping for the specified key from this map if present.
+     * Not required for Lab 7. If you don't implement this, throw an
+     * UnsupportedOperationException. */
     @Override
-    public Object remove(Object key) {
-        // Deletion key doesn't exist
-        if (!containsKey(key)) {
-            throw new UnsupportedOperationException();
-        }
-        Object returnVal = get(key);
-        root = remove(root, (K) key);
-        return returnVal;
-
+    public V remove(K key){
+        throw new UnsupportedOperationException();
     }
 
-    /**
-     * Get node with a given key, a helper method.
-     * @param x node
-     * @param k key
-     * @return node
-     */
-    private Node getNode(Node x, K k) {
-        if (k == null) {
-            throw new IllegalArgumentException("calls get() with a null key");
-        }
-        if (x == null) {
-            return null;
-        }
-        // binary search for key
-        int compare = k.compareTo(x.key);
-        if (compare < 0) {
-            return getNode(x.left, k);
-        }
-        else if (compare > 0) {
-            return getNode(x.right, k);
-        } else {
-            return x;
-        }
-    }
-
-    /**
-     * Remove node, one key many values.
-     * @param key key
-     * @param value value
-     * @return value
-     */
+    /* Removes the entry for the specified key only if it is currently mapped to
+     * the specified value. Not required for Lab 7. If you don't implement this,
+     * throw an UnsupportedOperationException.*/
     @Override
-    public Object remove(Object key, Object value) {
-        if (!containsKey(key)) {
-            //throw new UnsupportedOperationException("can't remove() a null key");
-            return null;
-        }
-        if (!get(key).equals(value)) {
-            //throw new UnsupportedOperationException("value given doesn't match key pairs");
-            return null;
-        }
-        root = remove(root, (K)key);
-        return value;
-    }
-
-    /**
-     * Really works remove() method.
-     * @param x x
-     * @param key key
-     * @return root
-     */
-    private Node remove(Node x, K key) {
-        if (x == null || !containsKey(key)) {
-            return null;
-        }
-        Node temp = x;
-        int cmp = key.compareTo(x.key);
-
-        if (cmp < 0) { // key is smaller
-            temp.left = remove(temp.left, key);
-        }
-        else if (cmp > 0) { // key is larger
-            temp.right = remove(temp.right, key);
-        } else { // find the key
-            //1. Deletion key has no children.
-            if (temp.left == null && temp.right == null) {
-                return null;
-            }
-            //2. Deletion key has one child.
-            if (temp.left == null) {
-                return temp.right;
-            }
-            if (temp.right == null) {
-                return temp.left;
-            }
-            //3. Deletion key has two child.
-            // find predecessor (or successor)
-            // save the link points to the predecessor
-            // delete predecessor, points the link to the left node of the predecessor
-            // set the root node as the predecessor
-
-            temp = predecessor(temp.left); // temp points to the predecessor
-            temp.left = deletePred(x.left);
-            temp.right = x.right;
-
-        }
-        temp.size = 1 + size(temp.left) + size(temp.right);
-        return temp;
-    }
-
-    /** Find predecessor node. */
-    private Node predecessor(Node x) { // input x = root.left
-        Node temp = x;
-        if (temp.right == null) {
-            return temp;
-        }
-        return predecessor(temp.right);
-    }
-
-    /** Delete predecessor node. */
-    private Node deletePred(Node x) { // x = root.left
-        Node temp = x;
-        if (temp.right == null) {
-            return temp.left;
-        }
-        temp.right = deletePred(temp.right);
-        temp.size = 1 + size(temp.right) + size(temp.left);
-        return temp;
-
+    public V remove(K key, V value){
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public Iterator iterator() {
-        return new BSTMapIter();
+    public Iterator<K> iterator(){
+        return new BSTMapIterator();
     }
 
-    private class BSTMapIter implements Iterator{
-        private Node cur;
+    private class BSTMapIterator implements Iterator<K>{
+        List<K> q;
+        int idx;
 
-        /** Create a new BSTMapIter by setting cur to the root node in the
-         *  BSTree that stores the key-value pairs. */
-        public BSTMapIter() {
-            cur = root;
+        public BSTMapIterator(){
+            q = new ArrayList<>();
+            idx = 0;
+            inOrderTraversal(root);
+        }
+        @Override
+        public boolean hasNext(){
+            return idx < q.size();
         }
 
         @Override
-        public boolean hasNext() {
-            return cur != null;
+        public K next(){
+            return q.get(idx++);
         }
 
-        @Override
-        public Object next() {
-            K next = cur.key;
-            if (cur.left != null) {
-                cur = cur.left;
-            }
-            else if (cur.right != null) {
-                cur = cur.right;
-            }
-            return next;
+        public void inOrderTraversal(Node x){
+            if ( x == null ) return;
+            inOrderTraversal(x.left);
+            q.add(x.m_key);
+            inOrderTraversal(x.right);
         }
     }
 
-    /** Prints out your BSTMap in order of increasing Key.*/
-    public void printInOrder() {
-        printKey(root);
-    }
-
-    // Inorder traversal
-    private void printKey(Node x) {
-        Node temp = x; // temp tree node pointer
-        if (temp == null) {
-            return;
+    public static void main(String[] args){
+        BSTMap<Integer, Integer> bstMap = new BSTMap<>();
+        bstMap.put(1, 1);
+        bstMap.put(2,1);
+        bstMap.put(3,1);
+        for (int k:bstMap){
+            System.out.println(k);
         }
-        printKey(temp.left);
-        System.out.println(temp.key);
-        printKey(temp.right);
-
+        int a = 1;
     }
-
 }
